@@ -1,0 +1,56 @@
+group 'homework'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
+}
+
+ext {
+    customTags = project.findProperty('tags') ?: "@sslv"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.0.2'
+}
+
+dependencies {
+    compile 'com.codeborne:selenide:4.3'
+    compile group: 'info.cukes', name: 'cucumber-core', version: '1.2.5'
+    compile group: 'info.cukes', name: 'cucumber-java', version: '1.2.4'
+    compile group: 'info.cukes', name: 'cucumber-junit', version: '1.2.4'
+    compile group: 'info.cukes', name: 'cucumber-guice', version: '1.2.4'
+    compile group: 'com.google.inject', name: 'guice', version: '3.0'
+    compile group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '1.7.0'
+    compile group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.14.0'
+    compile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+task runTests() {
+    dependsOn compileJava, processTestResources
+
+    List cukesOptions = [
+            '--plugin', "rerun:target/rerun.txt",
+            '--glue', 'classpath:steps',
+            '--tags', "$customTags", 'classpath:features',
+            '--plugin', 'pretty'
+    ]
+
+    doLast {
+        javaexec {
+            main = 'cucumber.api.cli.Main'
+            classpath configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = cukesOptions
+        }
+    }
+}
