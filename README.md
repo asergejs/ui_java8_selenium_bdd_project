@@ -1,4 +1,4 @@
-# sslv
+# Ui example project
 
 ##### Homework project.
 ## Technologies used:
